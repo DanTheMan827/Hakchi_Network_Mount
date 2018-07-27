@@ -1,7 +1,7 @@
 MOD_VER := Hakchi_Network_Mount_v1_0_0
 MOD_NAME := Hakchi Network Mount v1.0.0 (PRERELEASE)
 MOD_CREATOR := Swingflip
-MOD_CATEGORY := Extra Functionality
+MOD_CATEGORY := Additional Functionality
 
 GIT_COMMIT := $(shell echo "`git rev-parse --short HEAD``git diff-index --quiet HEAD -- || echo '-dirty'`")
 
