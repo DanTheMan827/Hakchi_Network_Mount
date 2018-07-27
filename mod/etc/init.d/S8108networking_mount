@@ -1,11 +1,10 @@
 #!/bin/sh
-# Swingflip - HakchiResources.com https://discord.gg/8gygsrw
-
-source /etc/preinit
-script_init
 
 start()
 {
+    source /etc/preinit
+    script_init
+
     [ -f "/media/hakchi/retroarch-mounted.cfg" ] && mv -f "/media/hakchi/retroarch-mounted.cfg" "/etc/libretro/"
     [ -f "/media/hakchi/network-mount.cfg" ] && mv -f "/media/hakchi/network-mount.cfg" "/etc/"
 
@@ -14,7 +13,7 @@ start()
         source /etc/network-mount.cfg
         [ "$mount_use_ra_cfg" == "true" ] && source /etc/libretro/retroarch-mounted.cfg
 
-        if [ "$ra_mount_enable" == "true" ] && [ ! -z "${ra_mount_address// }" ] || [ "$mount_enable" == "true" ] && [ ! -z "${mount_address// }" ]; then
+        if [[ "$ra_mount_enable" == "true" ] && [ ! -z "${ra_mount_address// }" ]] || [[ "$mount_enable" == "true" ] && [ ! -z "${mount_address// }" ]]; then
             mkdir -p /var/mount
             if [ "$ra_mount_enable" == "true" ]; then
                 if [ "$ra_mount_vers" -gt "0" ]; then
