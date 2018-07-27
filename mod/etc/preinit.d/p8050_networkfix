@@ -1,0 +1,1 @@
+[ -f "$rootfs/etc/init.d/S92networking" ] && mv "$rootfs/etc/init.d/S92networking" "$rootfs/etc/init.d/S80networking"
