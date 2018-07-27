@@ -48,13 +48,13 @@ start()
 
 stop()
 {
-	if [ -d /var/mount ]; then
+    if [ -d /var/mount ]; then
         [ "$mount_saves" == "true" ] && umount "/var/mount/saves"
         [ ! -d "/var/mount/games" ] && umount "/var/mount/games"
         umount "/var/mount"
         rm -rf "/var/mount" 
         echo "[NetMount] Unmounted network drive"
-  fi
+    fi
 }
 
 case "$1" in
