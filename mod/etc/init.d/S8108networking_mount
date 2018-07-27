@@ -1,73 +1,77 @@
-#!/bin/sh
+    #!/bin/sh
+    # Swingflip - HakchiResources.com https://discord.gg/8gygsrw
 
-start()
-{
-    source /etc/preinit
-    script_init
+    start()
+    {
 
-    [ -f "/media/hakchi/retroarch-mounted.cfg" ] && mv -f "/media/hakchi/retroarch-mounted.cfg" "/etc/libretro/"
-    [ -f "/media/hakchi/network-mount.cfg" ] && mv -f "/media/hakchi/network-mount.cfg" "/etc/"
+        source /etc/preinit
+        script_init
 
-    if [ -f "/etc/network-mount.cfg" ]; then #Just incase some one fucks up
-    
-        source /etc/network-mount.cfg
-        [ "$mount_use_ra_cfg" == "true" ] && source /etc/libretro/retroarch-mounted.cfg
+        [ -f "/media/hakchi/retroarch-mounted.cfg" ] && mv -f "/media/hakchi/retroarch-mounted.cfg" "/etc/libretro/"
+        [ -f "/media/hakchi/network-mount.cfg" ] && mv -f "/media/hakchi/network-mount.cfg" "/etc/"
 
-        if [[ "$ra_mount_enable" == "true" ] && [ ! -z "${ra_mount_address// }" ]] || [[ "$mount_enable" == "true" ] && [ ! -z "${mount_address// }" ]]; then
-            mkdir -p /var/mount
-            if [ "$ra_mount_enable" == "true" ]; then
-                if [ "$ra_mount_vers" -gt "0" ]; then
-                    mount -t cifs -o user=$ra_mount_user,pass=$ra_mount_pass,vers=$ra_mount_vers.0 $ra_mount_address /var/mount
+        if [ -f "/etc/network-mount.cfg" ]; then #Just incase some one fucks up
+        
+            source /etc/network-mount.cfg
+            [ "$mount_use_ra_cfg" == "true" ] && source /etc/libretro/retroarch-mounted.cfg
+
+            if [ "$ra_mount_enable" == "true" ] && [ ! -z "${ra_mount_address// }" ] || [ "$mount_enable" == "true" ] && [ ! -z "${mount_address// }" ]; then
+                mkdir -p /var/mount
+                if [ "$ra_mount_enable" == "true" ]; then
+                    if [ "$ra_mount_vers" -gt "0" ]; then
+                        mount -t cifs -o user=$ra_mount_user,pass=$ra_mount_pass,vers=$ra_mount_vers.0 $ra_mount_address /var/mount
+                    else
+                        mount -t cifs -o user=$ra_mount_user,pass=$ra_mount_pass $ra_mount_address /var/mount
+                    fi
                 else
-                    mount -t cifs -o user=$ra_mount_user,pass=$ra_mount_pass $ra_mount_address /var/mount
+                    if [ "$mount_vers" -gt "0" ]; then
+                        mount -t cifs -o user=$mount_user,pass=$mount_pass,vers=$mount_vers.0 $mount_address /var/mount
+                    else
+                        mount -t cifs -o user=$mount_user,pass=$mount_pass $mount_address /var/mount
+                    fi
+                fi
+            fi
+
+            if mountpoint -q /var/mount; then #If false, we fucked up.
+                echo "[NetMount] Mounted network drive"
+                if [ "$mount_saves" == "true" ]; then
+                    [ ! -d "/var/mount/saves" ] && mkdir -p /var/mount/saves 
+                    #Overmount something && echo "[NetMount] Mounted saves on network share"
+                fi
+                if [ ! -d "/var/mount/games" ]; then
+                    echo "[NetMount] I should be doing something here..."
+                    #Overmount something && echo "[NetMount] Mounted games on network share"
                 fi
             else
-                if [ "$mount_vers" -gt "0" ]; then
-                    mount -t cifs -o user=$mount_user,pass=$mount_pass,vers=$mount_vers.0 $mount_address /var/mount
-                else
-                    mount -t cifs -o user=$mount_user,pass=$mount_pass $mount_address /var/mount
-                fi
+                echo "[NetMount] [FAIL] Failed to mount network!"
             fi
         fi
 
-        if mountpoint -q /var/mount; then #If false, we fucked up.
-            echo "[NetMount] Mounted network drive"
-            if [ "$mount_saves" == "true" ]; then
-                [ ! -d "/var/mount/saves" ] && mkdir -p /var/mount/saves 
-                #Overmount something && echo "[NetMount] Mounted saves on network share"
-            fi
-            if [ ! -d "/var/mount/games" ]; then
-                #Overmount something && echo "[NetMount] Mounted games on network share"
-            fi
-        else
-            echo "[NetMount] [FAIL] Failed to mount network!"
+    }
+
+    stop()
+    {
+        if [ -d /var/mount ]; then
+            [ "$mount_saves" == "true" ] && umount "/var/mount/saves"
+            [ ! -d "/var/mount/games" ] && umount "/var/mount/games"
+            umount "/var/mount"
+            rm -rf "/var/mount" 
+            echo "[NetMount] Unmounted network drive"
         fi
+    }
 
-}
-
-stop()
-{
-    if [ -d /var/mount ]; then
-        [ "$mount_saves" == "true" ] && umount "/var/mount/saves"
-        [ ! -d "/var/mount/games" ] && umount "/var/mount/games"
-        umount "/var/mount"
-        rm -rf "/var/mount" 
-        echo "[NetMount] Unmounted network drive"
-    fi
-}
-
-case "$1" in
-start)
-	start
-;;
-stop)
-	stop
-;;
-restart)
-	stop
-	start
-;;
-*)
-	echo "Network mount unmount script: Stop unmounts /var/mount if it exists..."
-	exit 1
-esac
+    case "$1" in
+    start)
+        start
+    ;;
+    stop)
+        stop
+    ;;
+    restart)
+        stop
+        start
+    ;;
+    *)
+        echo "Network mount unmount script: Stop unmounts /var/mount if it exists..."
+        exit 1
+    esac
