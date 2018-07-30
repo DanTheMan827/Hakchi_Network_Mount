@@ -22,6 +22,7 @@
               ping -c 1 "$trueip"
               rc=$?
               sleep 1
+              [ "$(cat /dev/clovercon1 | grep 0800)" ] && exit 1
               if [ $rc = 0 ] ; then
                 echo "Ping Test Success!" > /dev/tty0
                 i=666
