@@ -14,38 +14,53 @@
         
             source /etc/network-mount.cfg
             [ "$mount_use_ra_cfg" == "true" ] && source /etc/libretro/retroarch-mounted.cfg
-
+            
+            for ((i=1;i<=60;i++)); #60 Second Ping test
+            do 
+              echo "Ping Test Number $i against IP address: $ra_mount_address" > /dev/tty0
+              ping -c $ra_mount_address
+              rc=$?
+              
+              if [[ $rc -eq 0 ]] ; then
+                echo "Ping Test Success!" > /dev/tty0
+                i=666
+              fi
+            done
+            
             if [ "$ra_mount_enable" == "true" ] && [ ! -z "${ra_mount_address// }" ] || [ "$mount_enable" == "true" ] && [ ! -z "${mount_address// }" ]; then
-                mkdir -p /var/mount
+                mkdir -p -v /var/mount &> /dev/tty0
                 if [ "$ra_mount_enable" == "true" ]; then
                     if [ "$ra_mount_vers" -gt "0" ]; then
-                        mount -t cifs -o user=$ra_mount_user,pass=$ra_mount_pass,vers=$ra_mount_vers.0 $ra_mount_address /var/mount
+                        mount -t cifs -o user=$ra_mount_user,pass=$ra_mount_pass,vers=$ra_mount_vers.0 $ra_mount_address /var/mount &> /dev/tty0
                     else
-                        mount -t cifs -o user=$ra_mount_user,pass=$ra_mount_pass $ra_mount_address /var/mount
+                        mount -t cifs -o user=$ra_mount_user,pass=$ra_mount_pass $ra_mount_address /var/mount &> /dev/tty0
                     fi
                 else
                     if [ "$mount_vers" -gt "0" ]; then
-                        mount -t cifs -o user=$mount_user,pass=$mount_pass,vers=$mount_vers.0 $mount_address /var/mount
+                        mount -t cifs -o user=$mount_user,pass=$mount_pass,vers=$mount_vers.0 $mount_address /var/mount &> /dev/tty0
                     else
-                        mount -t cifs -o user=$mount_user,pass=$mount_pass $mount_address /var/mount
+                        mount -t cifs -o user=$mount_user,pass=$mount_pass $mount_address /var/mount &> /dev/tty0
                     fi
                 fi
             fi
-
+            
             if mountpoint -q /var/mount; then #If false, we fucked up.
-                echo "[NetMount] Mounted network drive"
+                echo "[NetMount] Mounted network drive" &> /dev/tty0
                 if [ "$mount_saves" == "true" ]; then
                     [ ! -d "/var/mount/saves" ] && mkdir -p /var/mount/saves 
+                    echo "[NetMount] Mounted saves on network share" &> /dev/tty0
                     #Overmount something && echo "[NetMount] Mounted saves on network share"
                 fi
                 if [ ! -d "/var/mount/games" ]; then
-                    echo "[NetMount] I should be doing something here..."
+                    echo "[NetMount] Mounted games on network share" &> /dev/tty0
                     #Overmount something && echo "[NetMount] Mounted games on network share"
                 fi
             else
-                echo "[NetMount] [FAIL] Failed to mount network!"
+                echo "[NetMount] [FAIL] Failed to mount network!" &> /dev/tty0
             fi
         fi
+        
+        clear > /dev/tty0
 
     }
 
@@ -72,6 +87,6 @@
         start
     ;;
     *)
-        echo "Network mount unmount script: Stop unmounts /var/mount if it exists..."
+        echo "Network mount script: Does some cool shit..."
         exit 1
     esac
