@@ -3,45 +3,45 @@
 
     start()
     {
-
+		
         source /etc/preinit
         script_init
         
         # Reset
-        Color_Off="\[\033[0m\]"       # Text Reset
-
+        Color_Off="\e[33;0m"       # Text Reset
+		
         # Regular Colors
-        Black="\[\033[0;30m\]"        # Black
-        Red="\[\033[0;31m\]"          # Red
-        Green="\[\033[0;32m\]"        # Green
-        Yellow="\[\033[0;33m\]"       # Yellow
-        Blue="\[\033[0;34m\]"         # Blue
-        Purple="\[\033[0;35m\]"       # Purple
-        Cyan="\[\033[0;36m\]"         # Cyan
-        White="\[\033[0;37m\]"        # White
-
+        Black="\e[33;0;30m"        # Black
+        Red="\e[33;0;31m"          # Red
+        Green="\e[33;0;32m"        # Green
+        Yellow="\e[33;0;33m"       # Yellow
+        Blue="\e[33;0;34m"         # Blue
+        Purple="\e[33;0;35m"       # Purple
+        Cyan="\e[33;0;36m"         # Cyan
+        White="\e[33;0;37m"        # White
+		
         [ -f "/media/hakchi/retroarch-mounted.cfg" ] && mv -f "/media/hakchi/retroarch-mounted.cfg" "/etc/libretro/"
         [ -f "/media/hakchi/network-mount.cfg" ] && mv -f "/media/hakchi/network-mount.cfg" "/etc/"
-
-        if [ -f "/etc/network-mount.cfg" ]; then #Just incase some one fucks up
+		
+		source /etc/network-mount.cfg
+        [ "$mount_use_ra_cfg" == "true" ] && source /etc/libretro/retroarch-mounted.cfg
+        
+		if [ -f "/etc/network-mount.cfg" ]; then #Just incase some one fucks up
             
             if ([ "$ra_mount_enable" == "true" ] && [ ! -z "${ra_mount_address// }" ]) || ([ "$mount_enable" == "true" ] && [ ! -z "${mount_address// }" ]); then
-            
-                echo -e "${Green} ***************************" > /dev/tty0
-                echo -e "${Green} ***Hakchi Networking Mod***" > /dev/tty0
-                echo -e "${Green} ***************************" > /dev/tty0
-            
-                source /etc/network-mount.cfg
-                [ "$mount_use_ra_cfg" == "true" ] && source /etc/libretro/retroarch-mounted.cfg
-                
+				
+                echo -e "${Green}***************************" > /dev/tty0
+                echo -e "${Green}***Hakchi Networking Mod***" > /dev/tty0
+                echo -e "${Green}***************************" > /dev/tty0
+				
                 if [ "$mount_use_ra_cfg" == "true" ]; then
                   trueip="$(echo "$ra_mount_address" | grep -oE "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}")"
                 else
                   trueip="$(echo "$mount_address" | grep -oE "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}")"
                 fi
                 
-                echo -e "${White} Connecting to${Yellow} $trueip..." > /dev/tty0
-                
+                echo -e "${White}Connecting to${Yellow} $trueip...${White}" > /dev/tty0
+				
                 i=1
                 while [ "$i" -le 30 ]; do #30 Second Ping test
                   echo "Connection Attempt $i/30" > /dev/tty0
@@ -50,14 +50,14 @@
                   sleep 1
                   [ "$(cat /dev/clovercon1 | grep 0800)" ] && exit 1
                   if [ $rc = 0 ] ; then
-                    echo -e "${Green} Connected to network!${White}" > /dev/tty0
+                    echo -e "${Green}Connected to network!${White}" > /dev/tty0
                     i=666
                   else
                     i="$((i+1))"
                   fi
                 done
                 [ $rc = 0 ] || exit 1
-            
+				
                 mkdir -p -v /var/mount &> /dev/tty0
                 if [ "$ra_mount_enable" == "true" ]; then
                     if [ "$ra_mount_vers" -gt "0" ]; then
@@ -73,9 +73,9 @@
                     fi
                 fi
             fi
-            
+			
             if mountpoint -q /var/mount; then #If false, we fucked up.
-                echo -e "{Green}[NetMount] Mounted network drive" &> /dev/tty0
+                echo -e "${Green}[NetMount] Mounted network drive" &> /dev/tty0
                 if [ "$mount_saves" == "true" ]; then
                     [ ! -d "/var/mount/saves" ] && mkdir -p /var/mount/saves 
                     echo -e "{Green}[NetMount] Mounted saves on network share${Color_Off}" &> /dev/tty0
@@ -86,12 +86,12 @@
                     #Overmount something && echo "[NetMount] Mounted games on network share"
                 fi
             else
-                echo -e "{Red}[NetMount] [FAIL] Failed to mount network!${Color_Off}" &> /dev/tty0
+                echo -e "${Red}[NetMount] [FAIL] Failed to mount network!${Color_Off}" &> /dev/tty0
             fi
         fi
         
         clear > /dev/tty0
-
+	
     }
 
     stop()
