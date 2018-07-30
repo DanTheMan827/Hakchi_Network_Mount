@@ -15,21 +15,21 @@
             source /etc/network-mount.cfg
             [ "$mount_use_ra_cfg" == "true" ] && source /etc/libretro/retroarch-mounted.cfg
             
-						trueip="$(echo "$ra_mount_address" | grep -oE "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}")"
-						i=1
-						while [ "$i" -le 60 ]; do #60 Second Ping test
-							echo "Ping Test Number $i against IP address: $trueip" > /dev/tty0
-							ping -c 1 "$trueip"
-							rc=$?
-							sleep 1
-							if [ $rc = 0 ] ; then
-								echo "Ping Test Success!" > /dev/tty0
-								i=666
-							else
-								i="$((i+1))"
-							fi
-						done
-						[ $rc = 0 ] || exit 1
+            trueip="$(echo "$ra_mount_address" | grep -oE "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}")"
+            i=1
+            while [ "$i" -le 60 ]; do #60 Second Ping test
+              echo "Ping Test Number $i against IP address: $trueip" > /dev/tty0
+              ping -c 1 "$trueip"
+              rc=$?
+              sleep 1
+              if [ $rc = 0 ] ; then
+                echo "Ping Test Success!" > /dev/tty0
+                i=666
+              else
+                i="$((i+1))"
+              fi
+            done
+            [ $rc = 0 ] || exit 1
             
             if [ "$ra_mount_enable" == "true" ] && [ ! -z "${ra_mount_address// }" ] || [ "$mount_enable" == "true" ] && [ ! -z "${mount_address// }" ]; then
                 mkdir -p -v /var/mount &> /dev/tty0
