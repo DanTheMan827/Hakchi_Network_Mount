@@ -42,21 +42,14 @@
                 
                 echo -e "${White}Connecting to${Yellow} $trueip...${White}" > /dev/tty0
 				
-                i=1
-                while [ "$i" -le 30 ]; do #30 Second Ping test
-                  echo "Connection Attempt $i/30" > /dev/tty0
-                  ping -c 1 "$trueip"
-                  rc=$?
+                until ping -w 1 -c 1 "$trueip" > /dev/tty0; do
+                  [ "$(cat /dev/clovercon1)" = "0800" ] && exit 1
+                  ping_loop="$((ping_loop+1))"
+                  echo "Connection Attempt $ping_loop/30" > /dev/tty0
+                  [ "$ping_loop" -ge "30" ] && exit 1
                   sleep 1
-                  [ "$(cat /dev/clovercon1 | grep 0800)" ] && exit 1
-                  if [ $rc = 0 ] ; then
-                    echo -e "${Green}Connected to network!${White}" > /dev/tty0
-                    i=666
-                  else
-                    i="$((i+1))"
-                  fi
                 done
-                [ $rc = 0 ] || exit 1
+                echo -e "${Green}Connected to network!${White}" > /dev/tty0
 				
                 mkdir -p -v /var/mount &> /dev/tty0
                 if [ "$ra_mount_enable" == "true" ]; then
